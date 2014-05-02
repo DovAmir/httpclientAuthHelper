@@ -3,14 +3,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.jivesoftware</groupId>
+    <groupId>jivesoftware</groupId>
     <packaging>jar</packaging>
     <version>1.0.0</version>
     <description>A Java package that makes it easy to use httpclient with NTLM, Kerberos and SSL servers</description>
 
     <artifactId>extendedAuth</artifactId>
     <name>extendedAuth for httpclient</name>
-    <url></url>
+    <url>http://maven.apache.org</url>
     <licenses>
         <license>
             <name>Apache License v2</name>
@@ -39,7 +39,7 @@
         <dependency>
             <groupId>ca.juliusdavies</groupId>
             <artifactId>not-yet-commons-ssl</artifactId>
-            <version>0.3.9</version>
+            <version>0.3.11</version>
             <!-- TODO upgrade to 0.3.12 -->
         </dependency>
         <dependency>
@@ -50,7 +50,7 @@
      <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.7</version>
+            <version>1.9</version>
         </dependency>
 
 
