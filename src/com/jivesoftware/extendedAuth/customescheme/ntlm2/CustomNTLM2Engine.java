@@ -7,16 +7,17 @@
  */
 package com.jivesoftware.extendedAuth.customescheme.ntlm2;
 
-
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.httpclient.auth.AuthenticationException;
-
-import javax.crypto.Cipher;
-import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
 import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Locale;
+
+
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.httpclient.auth.AuthenticationException;
+
 
 
 /**
@@ -31,12 +32,15 @@ public class CustomNTLM2Engine {
     protected final static int FLAG_REQUEST_UNICODE_ENCODING = 0x00000001;      // Unicode string encoding requested
     protected final static int FLAG_REQUEST_TARGET = 0x00000004;                      // Requests target field
     protected final static int FLAG_REQUEST_SIGN = 0x00000010;  // Requests all messages have a signature attached, in NEGOTIATE message.
-    protected final static int FLAG_REQUEST_SEAL = 0x00000020;  // Request key exchange for message confidentiality in NEGOTIATE message.  MUST be used in conjunction with 56BIT.
+    protected final static int FLAG_REQUEST_SEAL = 0x00000020;
+    // Request key exchange for message confidentiality in NEGOTIATE message.  MUST be used in conjunction with 56BIT.
     protected final static int FLAG_REQUEST_LAN_MANAGER_KEY = 0x00000080;    // Request Lan Manager key instead of user session key
     protected final static int FLAG_REQUEST_NTLMv1 = 0x00000200; // Request NTLMv1 security.  MUST be set in NEGOTIATE and CHALLENGE both
     protected final static int FLAG_DOMAIN_PRESENT = 0x00001000;        // Domain is present in message
-    protected final static int FLAG_WORKSTATION_PRESENT = 0x00002000;   // Workstation is present in message
-    protected final static int FLAG_REQUEST_ALWAYS_SIGN = 0x00008000;   // Requests a signature block on all messages.  Overridden by REQUEST_SIGN and REQUEST_SEAL.
+    protected final static int FLAG_WORKSTATION_PRESENT = 0x00002000;
+    // Workstation is present in message
+    protected final static int FLAG_REQUEST_ALWAYS_SIGN = 0x00008000;
+    // Requests a signature block on all messages.  Overridden by REQUEST_SIGN and REQUEST_SEAL.
     protected final static int FLAG_REQUEST_NTLM2_SESSION = 0x00080000; // From server in challenge, requesting NTLM2 session security
     protected final static int FLAG_REQUEST_VERSION = 0x02000000;       // Request protocol version
     protected final static int FLAG_TARGETINFO_PRESENT = 0x00800000;    // From server in challenge message, indicating targetinfo is present

@@ -2,11 +2,12 @@
 
 package com.jivesoftware.extendedAuth.customescheme.ntlm2;
 
-import org.apache.commons.httpclient.auth.AuthScheme;
-import org.apache.commons.httpclient.auth.MalformedChallengeException;
 
 import java.nio.charset.Charset;
 import java.util.Locale;
+import org.apache.commons.httpclient.auth.AuthScheme;
+import org.apache.commons.httpclient.auth.MalformedChallengeException;
+
 
 
 /**

@@ -1,12 +1,16 @@
 package com.jivesoftware.extendedAuth.customescheme.ssl;
 
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.KeyStore;
+
 import java.util.logging.Logger;
+
+
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+
 
 /**
  * Created with IntelliJ IDEA.

@@ -28,27 +28,28 @@
  *
  */
 
-//package org.apache.commons.httpclient.contrib.auth;
 package com.jivesoftware.extendedAuth.customescheme.negotiate;
 
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.httpclient.Credentials;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.*;
-import org.ietf.jgss.*;
-
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.Configuration;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Logger;
+
+import org.apache.commons.codec.binary.Base64;
+
+import org.apache.commons.httpclient.Credentials;
+import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.auth.*;
+import org.ietf.jgss.*;
+
 
 /**
  * Created with IntelliJ IDEA.
@@ -246,6 +247,7 @@ public class CustomNegotiateScheme implements AuthScheme {
      *
      * @deprecated no longer used
      */
+    @Deprecated
     public String getID() {
         LOG.info("enter getID(): " + challenge);
         return challenge;
@@ -289,6 +291,7 @@ public class CustomNegotiateScheme implements AuthScheme {
      *
      * @deprecated Use {@link #authenticate(org.apache.commons.httpclient.Credentials, org.apache.commons.httpclient.HttpMethod)}
      */
+    @Deprecated
     public String authenticate(Credentials credentials, String method, String uri)
             throws AuthenticationException {
         throw new AuthenticationException("method not supported by Negotiate scheme");

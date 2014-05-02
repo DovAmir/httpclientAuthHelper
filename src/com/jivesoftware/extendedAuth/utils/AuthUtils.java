@@ -1,12 +1,13 @@
 package com.jivesoftware.extendedAuth.utils;
 
-
 import com.jivesoftware.extendedAuth.customescheme.negotiate.KerberosCredentials;
-
-import java.io.IOException;
-
 import java.io.File;
+import java.io.IOException;
 import java.net.*;
+import java.security.GeneralSecurityException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.logging.Logger;
 
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
@@ -21,10 +22,6 @@ import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 
 
-import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.logging.Logger;
 /**
  * Created with IntelliJ IDEA.
  * User: dovamir

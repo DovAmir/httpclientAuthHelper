@@ -8,10 +8,11 @@
  */
 package com.jivesoftware.extendedAuth.customescheme.negotiate;
 
-import javax.security.auth.login.AppConfigurationEntry;
-import javax.security.auth.login.Configuration;
 import java.util.Collections;
 import java.util.Map;
+import javax.security.auth.login.AppConfigurationEntry;
+import javax.security.auth.login.Configuration;
+
 
 /**
  * Created with IntelliJ IDEA.

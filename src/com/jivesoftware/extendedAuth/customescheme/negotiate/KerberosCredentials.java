@@ -13,6 +13,15 @@ public class KerberosCredentials extends NTCredentials {
 
     String kdc;
 
+    public KerberosCredentials(String userName, String password, String host,
+                         String domain, String kdc) {
+        super(userName, password, host, domain);
+        if (kdc == null) {
+            kdc= domain;
+        }
+        this.kdc = kdc;
+
+    }
 
     public void setKdc(String kdc) {
         this.kdc = kdc;

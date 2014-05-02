@@ -9,10 +9,10 @@
 package com.jivesoftware.extendedAuth.customescheme.negotiate;
 
 /* JAAS imports */
-
-import javax.security.auth.callback.*;
 import java.io.*;
 import java.util.Arrays;
+import javax.security.auth.callback.*;
+
 
 /* Java imports */
 
