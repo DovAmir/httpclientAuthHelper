@@ -1,14 +1,5 @@
 package com.jivesoftware.extendedAuth.utils;
 
-import com.jivesoftware.extendedAuth.customescheme.negotiate.KerberosCredentials;
-import java.io.File;
-import java.io.IOException;
-import java.net.*;
-import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.logging.Logger;
-
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.NTCredentials;
@@ -20,6 +11,14 @@ import org.apache.commons.httpclient.contrib.ssl.EasySSLProtocolSocketFactory;
 import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.*;
+import java.security.GeneralSecurityException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.logging.Logger;
 
 
 /**
@@ -52,7 +51,18 @@ public class AuthUtils {
             JRE_HOME + File.separator + "lib" + File.separator + "security" + File.separator + "cacerts";
 
 
-    private void setNTLMCredentials(HttpClient httpClient, String url, NTCredentials credentials) {
+    public static void setBASICAUTHCredentials(HttpClient httpClient, String url,
+                                               UsernamePasswordCredentials credentials) {
+
+        httpClient.getState().setCredentials(
+                new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), credentials);
+
+    }
+
+
+    // http://www.websense.com/support/article/kbarticle/How-do-I-Check-NTLM-Version-for-XID-Compatibility
+    public static void setNTLMCredentials(HttpClient httpClient, String url, String username, String password,
+                                          String domain) {
         initNTLMv2();
 
         String localHostName;
@@ -75,7 +85,7 @@ public class AuthUtils {
         int port = uri.getPort();
         AuthScope authscope;
         if (port == -1) {
-            authscope = new AuthScope(uri.getHost(), AuthScope.ANY_PORT);
+            authscope = new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT);
         } else {
             authscope = new AuthScope(uri.getHost(), port);
         }
@@ -83,9 +93,9 @@ public class AuthUtils {
         httpClient.getState().setCredentials(
                 authscope,
                 new NTCredentials(
-                        credentials.getUserName(),
-                        credentials.getPassword(),
-                        localHostName, credentials.getDomain()));
+                        username,
+                        password,
+                        localHostName, domain));
     }
 
     /*
@@ -94,7 +104,7 @@ public class AuthUtils {
      http://buyevich.blogspot.co.il/2011/03/accessing-mixed-authentication-web-app.html
      */
 
-    private void initUseNTLMforMixedAuth(HttpClient httpClient) {
+    public static void initUseNTLMforMixedAuth(HttpClient httpClient) {
         if (!registeredCLAIMS) {
             LOG.info(" adding header to avoid forms based auth");
             HttpClientParams clientParams = httpClient.getParams();
@@ -105,7 +115,22 @@ public class AuthUtils {
         }
     }
 
-    private void initNTLMv2() {
+    public static void initUserAgentHeaders(HttpClient httpClient) {
+        LOG.info(" adding header to avoid forms based auth");
+        HttpClientParams clientParams = httpClient.getParams();
+        HashSet<Header> headerSet = (HashSet<Header>) clientParams.getParameter("http.default-headers");
+        Header header1 = new Header("Accept-Encoding", "gzip,deflate,sdch");
+        Header header2 = new Header("User-Agent",
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.131 Safari/537.36");
+        //Header header3= new Header("Content-Type", "text/plain; charset=utf-8");
+
+        headerSet.add(header1);
+        headerSet.add(header2);
+        //headerSet.add(header3);
+    }
+
+
+    private static void initNTLMv2() {
         if (!registeredNTLM) {
             try {
                 LOG.info(" adding NTLMv2 based   authentication schema for HttpClient");
@@ -120,7 +145,7 @@ public class AuthUtils {
         }
     }
 
-    private void initKERBEROS(HttpClient httpClient) {
+    private static void initKERBEROS(HttpClient httpClient) {
         if (!registeredKERBEROS) {
             try {
                 LOG.info("Globally adding KERBEROS ");
@@ -137,17 +162,14 @@ public class AuthUtils {
     }
 
 
-    private void setKERBEROSCredentials(HttpClient httpClient, String url,
-                                        KerberosCredentials kerberosCredentials) {
+    public static void setKERBEROSCredentials(HttpClient httpClient,
+                                              String username, String password, String domain, String kdc) {
         try {
             //set the login scheme
             initKERBEROS(httpClient);
-            System.setProperty(REALM, kerberosCredentials.getDomain().toUpperCase());
-            String kdc = kerberosCredentials.getDomain();
-            if (kerberosCredentials.getKdc() != null) {
-                kdc = kerberosCredentials.getKdc().isEmpty() ? kerberosCredentials.getDomain().toUpperCase()
-                        : kerberosCredentials.getKdc();
-            }
+            System.setProperty(REALM, domain.toUpperCase());
+            kdc = (kdc == null || kdc.isEmpty()) ? domain.toUpperCase() : kdc;
+
             System.setProperty(KDC, kdc);
         } catch (Exception e) {
             String message = "error  in initKERBEROSIfNeeded";
@@ -159,9 +181,9 @@ public class AuthUtils {
             schemes.add(NEGOTIATE);
             schemes.add(AuthPolicy.BASIC); //to support basic auth proxy on the way
             httpClient.getParams().setParameter(AuthPolicy.AUTH_SCHEME_PRIORITY, schemes);
-            AuthScope authscope = new AuthScope(null, AuthScope.ANY_PORT, null);
+            AuthScope authscope = new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT, null);
             UsernamePasswordCredentials useJassCreds = new UsernamePasswordCredentials(
-                    kerberosCredentials.getUserName(), kerberosCredentials.getPassword());
+                    username, password);
             httpClient.getState().setCredentials(
                     authscope,
                     useJassCreds);
@@ -178,14 +200,14 @@ public class AuthUtils {
       creats SSL Sockets that accepts all certificates including expired and self-signed certificates
       warning : might be insecure
      */
-    private void initHTTPStrustAll(final Integer port) {
+    public static void initHTTPStrustAll() {
 
         if (!registeredHTTPStrustAll) {
             try {
                 LOG.info("started registering https to trust all certificates");
                 ProtocolSocketFactory myHTTPSProtocol = new EasySSLProtocolSocketFactory();
                 Protocol.registerProtocol(HTTPS_SCHEMA,
-                        new Protocol(HTTPS_SCHEMA, myHTTPSProtocol, port == null ? HTTPS_PORT : port));
+                        new Protocol(HTTPS_SCHEMA, myHTTPSProtocol, HTTPS_PORT));
                 LOG.info("finished registering https to trust all certificates");
                 registeredHTTPStrustAll = true;
             } catch (GeneralSecurityException e) {
@@ -197,12 +219,12 @@ public class AuthUtils {
         }
     }
 
-    private void initHTTPSdefault() {
+    public static void initHTTPSdefault() {
         initHTTPSkeysWithPass(null, null, null, null, HTTPS_PORT); //DEFAULT_TRUST_STORE_PATH, DEFAULT_STORE_PASSWORD);
     }
 
-    private void initHTTPSkeys(final String pathToKeyStore,
-                               final String pathToTruststore) {
+    public static void initHTTPSkeys(final String pathToKeyStore,
+                                     final String pathToTruststore) {
         initHTTPSkeysWithPass(pathToKeyStore, DEFAULT_STORE_PASSWORD, pathToTruststore, DEFAULT_STORE_PASSWORD,
                 HTTPS_PORT);
     }
@@ -219,11 +241,11 @@ public class AuthUtils {
       *                           authentication is not to be used.
       * @param truststorePassword Password to unlock the truststore.
      */
-    private void initHTTPSkeysWithPass(final String pathToKeyStore,
-                                       final String keystorePassword,
-                                       final String pathToTruststore,
-                                       final String truststorePassword,
-                                       final Integer port) {
+    public static void initHTTPSkeysWithPass(final String pathToKeyStore,
+                                             final String keystorePassword,
+                                             final String pathToTruststore,
+                                             final String truststorePassword,
+                                             final Integer port) {
 
         if (!registeredHTTPStrustKeyStore) {
             try {
