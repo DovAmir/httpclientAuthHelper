@@ -1,9 +1,6 @@
 package com.jivesoftware.extendedAuth.utils;
 
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.NTCredentials;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.auth.AuthPolicy;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.contrib.ssl.AuthSSLProtocolSocketFactory;
@@ -14,12 +11,15 @@ import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.*;
+import java.io.InputStream;
+import java.net.Inet4Address;
+import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.logging.Logger;
-
+import java.util.zip.GZIPInputStream;
+ import static com.jivesoftware.extendedAuth.utils.AuthConsts.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -29,31 +29,39 @@ import java.util.logging.Logger;
  * To change this template use File | Settings | File Templates.
  */
 public class AuthUtils {
-
     private static Logger LOG = Logger.getLogger(AuthUtils.class.getName());
+
+
+
 
     private static boolean registeredNTLM;
     private static boolean registeredCLAIMS;
     private static boolean registeredKERBEROS;
     private static boolean registeredHTTPStrustAll;
     private static boolean registeredHTTPStrustKeyStore;
-
-    private static final String NEGOTIATE = "Negotiate";
-    private static final String FORMS_BASED_AUTH_ACCEPTED_HEADER = "X-FORMS_BASED_AUTH_ACCEPTED";
-    private static final String REALM = "java.security.krb5.realm";
-    private static final String KDC = "java.security.krb5.kdc";
-    private static final String USE_SUBJECT_CREDS = "javax.security.auth.useSubjectCredsOnly";
-    private static final String HTTPS_SCHEMA = "https";
-    private static final int HTTPS_PORT = 443;
-    private static final String DEFAULT_STORE_PASSWORD = "changit";
-    private static final String JRE_HOME = System.getProperties().getProperty("java.home");
-    private static final String DEFAULT_TRUST_STORE_PATH =
-            JRE_HOME + File.separator + "lib" + File.separator + "security" + File.separator + "cacerts";
+    //System.setProperty("jsse.enableSNIExtension", "false");
 
 
-    public static void setBASICAUTHCredentials(HttpClient httpClient, String url,
+    public static void securityLogging(SecurityLogType logType, boolean enable) {
+        String value = String.valueOf(enable);
+        if (enable && logType.equals(SecurityLogType.ALL) || logType.equals(SecurityLogType.SSL)) {
+            value = logType.toString().toLowerCase();
+        }
+        System.setProperty(logType.getLogtype(), value);
+    }
+
+
+    public static InputStream getStreamResponseAndHandleGzip(HttpMethodBase httpget) throws IOException {
+        Header contentEncodingHeader = httpget.getResponseHeader(CONTENT_ENCODING_HEADER);
+        InputStream stream = httpget.getResponseBodyAsStream();
+        if (contentEncodingHeader != null && contentEncodingHeader.getValue().equalsIgnoreCase(GZIP)) {
+            stream = new GZIPInputStream(stream);
+        }
+        return stream;
+    }
+
+    public static void setBasicAuthCredentials(HttpClient httpClient,
                                                UsernamePasswordCredentials credentials) {
-
         httpClient.getState().setCredentials(
                 new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), credentials);
 
@@ -61,74 +69,100 @@ public class AuthUtils {
 
 
     // http://www.websense.com/support/article/kbarticle/How-do-I-Check-NTLM-Version-for-XID-Compatibility
-    public static void setNTLMCredentials(HttpClient httpClient, String url, String username, String password,
+    public static void setNTLMCredentials(HttpClient httpClient, UsernamePasswordCredentials credentials,
                                           String domain) {
         initNTLMv2();
 
         String localHostName;
         try {
             localHostName = Inet4Address.getLocalHost().getHostName();
-        } catch (UnknownHostException e) {
-            localHostName = "";
         } catch (Exception e) {
             localHostName = "";
         }
 
-        URI uri;
-        try {
-            uri = new URI(url);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(
-                    "Could not parse  URL: " + url);
-        }
-
-        int port = uri.getPort();
-        AuthScope authscope;
-        if (port == -1) {
-            authscope = new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT);
-        } else {
-            authscope = new AuthScope(uri.getHost(), port);
-        }
-
+        AuthScope authscope = new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT);
         httpClient.getState().setCredentials(
                 authscope,
                 new NTCredentials(
-                        username,
-                        password,
+                        credentials.getUserName(),
+                        credentials.getPassword(),
                         localHostName, domain));
     }
 
-    /*
+
+    public static void setKerberosCredentials(HttpClient httpClient,
+                                              UsernamePasswordCredentials credentials, String domain, String kdc) {
+        try {
+            //set the login scheme
+            initKERBEROS(httpClient);
+
+            System.setProperty(REALM, domain.toUpperCase());
+            kdc = (kdc == null || kdc.isEmpty()) ? domain.toUpperCase() : kdc;
+            System.setProperty(KDC, kdc);
+        } catch (Exception e) {
+            String message = "error  in initKERBEROSIfNeeded";
+            LOG.log(java.util.logging.Level.SEVERE, message, e);
+        }
+        try {
+            System.err.println("attempting to create KERBEROS using apache http client3");
+            ArrayList schemes = new ArrayList();
+            schemes.add(NEGOTIATE);
+            schemes.add(AuthPolicy.BASIC); //to support basic auth proxy on the way
+            httpClient.getParams().setParameter(AuthPolicy.AUTH_SCHEME_PRIORITY, schemes);
+            AuthScope authscope = new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT, null);
+
+            httpClient.getState().setCredentials(
+                    authscope,
+                    credentials);
+        } catch (Exception e) {
+            String message = "Can not create And Authenticate setKERBEROSCredentials";
+            LOG.log(java.util.logging.Level.SEVERE, message, e);
+
+        }
+
+
+    }
+
+
+    public static void addDefaultHeader(SecurityLogType logType, boolean enable) {
+        String value = String.valueOf(enable);
+        if (enable && logType.equals(SecurityLogType.ALL) || logType.equals(SecurityLogType.SSL)) {
+            value = logType.toString().toLowerCase();
+        }
+        System.setProperty(logType.getLogtype(), value);
+    }
+
+        /*
      Accessing mixed authentication windows Client using windows (ntlm) authentication.
      The mixed authentication can be for example NTLM and Forms based
      http://buyevich.blogspot.co.il/2011/03/accessing-mixed-authentication-web-app.html
      */
 
-    public static void initUseNTLMforMixedAuth(HttpClient httpClient) {
+    public static void useNTLMforMixedAuth(HttpClient httpClient) {
         if (!registeredCLAIMS) {
             LOG.info(" adding header to avoid forms based auth");
-            HttpClientParams clientParams = httpClient.getParams();
-            HashSet<Header> headerSet = (HashSet<Header>) clientParams.getParameter("http.default-headers");
-            Header header = new Header(FORMS_BASED_AUTH_ACCEPTED_HEADER, "f");
-            headerSet.add(header);
+            addDefaultHeader(httpClient, false, FORMS_BASED_AUTH_ACCEPTED_HEADER, "f");
             registeredCLAIMS = true;
         }
     }
 
-    public static void initUserAgentHeaders(HttpClient httpClient) {
-        LOG.info(" adding header to avoid forms based auth");
-        HttpClientParams clientParams = httpClient.getParams();
-        HashSet<Header> headerSet = (HashSet<Header>) clientParams.getParameter("http.default-headers");
-        Header header1 = new Header("Accept-Encoding", "gzip,deflate,sdch");
-        Header header2 = new Header("User-Agent",
-                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.131 Safari/537.36");
-        //Header header3= new Header("Content-Type", "text/plain; charset=utf-8");
-
-        headerSet.add(header1);
-        headerSet.add(header2);
-        //headerSet.add(header3);
+    public static void impersonateBrowserUserAgent(HttpClient httpClient) {
+        LOG.info(" adding user agent of a browser");
+        addDefaultHeader(httpClient, false, USER_AGENT,
+                AuthConsts.BROWSER_USER_AGENT_VALUE);
     }
 
+    private static void addDefaultHeader(HttpClient httpClient, boolean removeHeader, String headerName,
+                                         String headervalue) {
+        HttpClientParams clientParams = httpClient.getParams();
+        HashSet<Header> headerSet = (HashSet<Header>) clientParams.getParameter(HTTP_DEFAULT_HEADERS);
+        if (!headerSet.contains(headerName) && !removeHeader) {
+            Header header1 = new Header(headerName, headervalue);
+            headerSet.add(header1);
+        } else if (headerSet.contains(headerName) && removeHeader) {
+            headerSet.remove(headerName);
+        }
+    }
 
     private static void initNTLMv2() {
         if (!registeredNTLM) {
@@ -161,40 +195,6 @@ public class AuthUtils {
         }
     }
 
-
-    public static void setKERBEROSCredentials(HttpClient httpClient,
-                                              String username, String password, String domain, String kdc) {
-        try {
-            //set the login scheme
-            initKERBEROS(httpClient);
-            System.setProperty(REALM, domain.toUpperCase());
-            kdc = (kdc == null || kdc.isEmpty()) ? domain.toUpperCase() : kdc;
-
-            System.setProperty(KDC, kdc);
-        } catch (Exception e) {
-            String message = "error  in initKERBEROSIfNeeded";
-            LOG.log(java.util.logging.Level.SEVERE, message, e);
-        }
-        try {
-            System.err.println("attempting to create KERBEROS using apache http client3");
-            ArrayList schemes = new ArrayList();
-            schemes.add(NEGOTIATE);
-            schemes.add(AuthPolicy.BASIC); //to support basic auth proxy on the way
-            httpClient.getParams().setParameter(AuthPolicy.AUTH_SCHEME_PRIORITY, schemes);
-            AuthScope authscope = new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT, null);
-            UsernamePasswordCredentials useJassCreds = new UsernamePasswordCredentials(
-                    username, password);
-            httpClient.getState().setCredentials(
-                    authscope,
-                    useJassCreds);
-        } catch (Exception e) {
-            String message = "Can not create And Authenticate setKERBEROSCredentials";
-            LOG.log(java.util.logging.Level.SEVERE, message, e);
-
-        }
-
-
-    }
 
     /*
       creats SSL Sockets that accepts all certificates including expired and self-signed certificates
