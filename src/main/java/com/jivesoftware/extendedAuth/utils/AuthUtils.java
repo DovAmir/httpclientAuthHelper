@@ -9,7 +9,6 @@ import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Inet4Address;
@@ -17,9 +16,11 @@ import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Scanner;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
- import static com.jivesoftware.extendedAuth.utils.AuthConsts.*;
+
+import static com.jivesoftware.extendedAuth.utils.AuthConsts.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -30,8 +31,6 @@ import java.util.zip.GZIPInputStream;
  */
 public class AuthUtils {
     private static Logger LOG = Logger.getLogger(AuthUtils.class.getName());
-
-
 
 
     private static boolean registeredNTLM;
@@ -51,13 +50,27 @@ public class AuthUtils {
     }
 
 
-    public static InputStream getStreamResponseAndHandleGzip(HttpMethodBase httpget) throws IOException {
+    public static Header[] printResponseHeaders(HttpMethodBase httpget) throws IOException {
+        System.out.println("Printing Response Header...\n");
+
+        Header[] headers = httpget.getResponseHeaders();
+        for (Header header : headers) {
+            System.out.println("Key : " + header.getName()
+                    + " ,Value : " + header.getValue());
+
+        }
+        return headers;
+    }
+
+
+    public static String getStreamResponseAsStringAndHandleGzip(HttpMethodBase httpget) throws IOException {
         Header contentEncodingHeader = httpget.getResponseHeader(CONTENT_ENCODING_HEADER);
         InputStream stream = httpget.getResponseBodyAsStream();
         if (contentEncodingHeader != null && contentEncodingHeader.getValue().equalsIgnoreCase(GZIP)) {
             stream = new GZIPInputStream(stream);
         }
-        return stream;
+        String inputStreamString = new Scanner(stream, "UTF-8").useDelimiter("\\A").next();
+        return inputStreamString;
     }
 
     public static void setBasicAuthCredentials(HttpClient httpClient,
@@ -67,6 +80,19 @@ public class AuthUtils {
 
     }
 
+
+    public static void setProxyCredentials(HttpClient httpClient, UsernamePasswordCredentials proxyCredentials,
+                                           String proxyHost, String proxyPort) {
+
+        if (proxyHost != null && !proxyHost.isEmpty() && proxyPort != null && !proxyPort.isEmpty()) {
+            httpClient.getHostConfiguration().setProxy(proxyHost, Integer.parseInt(proxyPort));
+            if (proxyCredentials != null) {
+                HttpState state = new HttpState();
+                state.setProxyCredentials(AuthScope.ANY, proxyCredentials);
+                httpClient.setState(state);
+            }
+        }
+    }
 
     // http://www.websense.com/support/article/kbarticle/How-do-I-Check-NTLM-Version-for-XID-Compatibility
     public static void setNTLMCredentials(HttpClient httpClient, UsernamePasswordCredentials credentials,
@@ -156,6 +182,10 @@ public class AuthUtils {
                                          String headervalue) {
         HttpClientParams clientParams = httpClient.getParams();
         HashSet<Header> headerSet = (HashSet<Header>) clientParams.getParameter(HTTP_DEFAULT_HEADERS);
+        if (headerSet == null) {
+            headerSet = new HashSet<Header>();
+            clientParams.setParameter(HTTP_DEFAULT_HEADERS, headerSet);
+        }
         if (!headerSet.contains(headerName) && !removeHeader) {
             Header header1 = new Header(headerName, headervalue);
             headerSet.add(header1);
@@ -200,7 +230,7 @@ public class AuthUtils {
       creats SSL Sockets that accepts all certificates including expired and self-signed certificates
       warning : might be insecure
      */
-    public static void initHTTPStrustAll() {
+    public static void trustAllSSLCertificates() {
 
         if (!registeredHTTPStrustAll) {
             try {
@@ -219,13 +249,14 @@ public class AuthUtils {
         }
     }
 
-    public static void initHTTPSdefault() {
-        initHTTPSkeysWithPass(null, null, null, null, HTTPS_PORT); //DEFAULT_TRUST_STORE_PATH, DEFAULT_STORE_PASSWORD);
+    public static void trustJDKDefaultSSLCertificates() {
+        trustCustomHTTPSCertificates(null, null, null, null,
+                HTTPS_PORT); //DEFAULT_TRUST_STORE_PATH, DEFAULT_STORE_PASSWORD);
     }
 
-    public static void initHTTPSkeys(final String pathToKeyStore,
-                                     final String pathToTruststore) {
-        initHTTPSkeysWithPass(pathToKeyStore, DEFAULT_STORE_PASSWORD, pathToTruststore, DEFAULT_STORE_PASSWORD,
+    public static void trustCustomHTTPSCertificates(final String pathToKeyStore,
+                                                    final String pathToTruststore) {
+        trustCustomHTTPSCertificates(pathToKeyStore, DEFAULT_STORE_PASSWORD, pathToTruststore, DEFAULT_STORE_PASSWORD,
                 HTTPS_PORT);
     }
 
@@ -241,11 +272,11 @@ public class AuthUtils {
       *                           authentication is not to be used.
       * @param truststorePassword Password to unlock the truststore.
      */
-    public static void initHTTPSkeysWithPass(final String pathToKeyStore,
-                                             final String keystorePassword,
-                                             final String pathToTruststore,
-                                             final String truststorePassword,
-                                             final Integer port) {
+    public static void trustCustomHTTPSCertificates(final String pathToKeyStore,
+                                                    final String keystorePassword,
+                                                    final String pathToTruststore,
+                                                    final String truststorePassword,
+                                                    final Integer port) {
 
         if (!registeredHTTPStrustKeyStore) {
             try {
