@@ -17,7 +17,7 @@ public class KerberosCredentials extends NTCredentials {
                          String domain, String kdc) {
         super(userName, password, host, domain);
         if (kdc == null) {
-            kdc= domain;
+            kdc = domain;
         }
         this.kdc = kdc;
 

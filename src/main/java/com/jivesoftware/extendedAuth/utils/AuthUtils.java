@@ -32,7 +32,7 @@ import static com.jivesoftware.extendedAuth.utils.AuthConsts.*;
  * To change this template use File | Settings | File Templates.
  */
 public class AuthUtils {
-    private static Logger LOG = Logger.getLogger(AuthUtils.class.getName());
+    private static Logger logger = Logger.getLogger(AuthUtils.class.getName());
 
 
     private static boolean registeredNTLM;
@@ -43,24 +43,19 @@ public class AuthUtils {
     //System.setProperty("jsse.enableSNIExtension", "false");
 
 
-
-
-
-
-
     public static void addEncryptionProviders() {
         try {
-             java.security.Provider secProvider1 = (java.security.Provider) Class
-                     .forName("com.sun.crypto.provider.SunJCE").newInstance();
-             Security.addProvider(secProvider1);
-         } catch (Exception e) {
-         }
+            java.security.Provider secProvider1 = (java.security.Provider) Class
+                    .forName("com.sun.crypto.provider.SunJCE").newInstance();
+            Security.addProvider(secProvider1);
+        } catch (Exception e) {
+        }
         try {
             java.security.Provider secProvider2 = (java.security.Provider) Class
                     .forName("com.ncipher.provider.km.nCipherKM").newInstance();
             Security.addProvider(secProvider2);
         } catch (Exception e) {
-       }
+        }
         try {
             java.security.Provider secProvider3 = (java.security.Provider) Class
                     .forName("com.ibm.crypto.provider.IBMJCE").newInstance();
@@ -68,9 +63,9 @@ public class AuthUtils {
         } catch (Exception e) {
         }
         try {
-            java.security.Provider secProvider4= (java.security.Provider) Class
+            java.security.Provider secProvider4 = (java.security.Provider) Class
                     .forName("sun.security.rsa.SunRsaSign").newInstance();
-           Security.addProvider(secProvider4);
+            Security.addProvider(secProvider4);
         } catch (Exception e) {
         }
         try {
@@ -165,7 +160,7 @@ public class AuthUtils {
             System.setProperty(KDC, kdc);
         } catch (Exception e) {
             String message = "error  in initKERBEROSIfNeeded";
-            LOG.log(java.util.logging.Level.SEVERE, message, e);
+            logger.log(java.util.logging.Level.SEVERE, message, e);
         }
         try {
             System.err.println("attempting to create KERBEROS using apache http client3");
@@ -180,7 +175,7 @@ public class AuthUtils {
                     credentials);
         } catch (Exception e) {
             String message = "Can not create And Authenticate setKERBEROSCredentials";
-            LOG.log(java.util.logging.Level.SEVERE, message, e);
+            logger.log(java.util.logging.Level.SEVERE, message, e);
 
         }
 
@@ -204,14 +199,14 @@ public class AuthUtils {
 
     public static void useNTLMforMixedAuth(HttpClient httpClient) {
         if (!registeredCLAIMS) {
-            LOG.info(" adding header to avoid forms based auth");
+            logger.info(" adding header to avoid forms based auth");
             addDefaultHeader(httpClient, false, FORMS_BASED_AUTH_ACCEPTED_HEADER, "f");
             registeredCLAIMS = true;
         }
     }
 
     public static void useBrowserUserAgent(HttpClient httpClient) {
-        LOG.info(" adding user agent of a browser");
+        logger.info(" adding user agent of a browser");
         addDefaultHeader(httpClient, false, USER_AGENT,
                 AuthConsts.BROWSER_USER_AGENT_VALUE);
     }
@@ -235,12 +230,12 @@ public class AuthUtils {
     private static void initNTLMv2() {
         if (!registeredNTLM) {
             try {
-                LOG.info(" adding NTLMv2 based   authentication schema for HttpClient");
+                logger.info(" adding NTLMv2 based   authentication schema for HttpClient");
                 AuthPolicy.registerAuthScheme(AuthPolicy.NTLM,
                         com.jivesoftware.extendedAuth.customescheme.ntlm2.CustomNTLM2Scheme.class);
                 registeredNTLM = true;
             } catch (Throwable e) {
-                LOG.log(java.util.logging.Level.SEVERE,
+                logger.log(java.util.logging.Level.SEVERE,
                         "Could not add NTLM based on JCIFS authentication schema for HttpClient.", e);
 
             }
@@ -250,14 +245,14 @@ public class AuthUtils {
     private static void initKERBEROS(HttpClient httpClient) {
         if (!registeredKERBEROS) {
             try {
-                LOG.info("Globally adding KERBEROS ");
+                logger.info("Globally adding KERBEROS ");
                 System.setProperty(USE_SUBJECT_CREDS, "false");
 
                 AuthPolicy.registerAuthScheme(NEGOTIATE,
                         com.jivesoftware.extendedAuth.customescheme.negotiate.CustomNegotiateScheme.class);
                 registeredKERBEROS = true;
             } catch (Throwable e) {
-                LOG.log(java.util.logging.Level.SEVERE, "Could not add KERBEROS  for HttpClient.", e);
+                logger.log(java.util.logging.Level.SEVERE, "Could not add KERBEROS  for HttpClient.", e);
             }
 
         }
@@ -272,16 +267,16 @@ public class AuthUtils {
 
         if (!registeredHTTPStrustAll) {
             try {
-                LOG.info("started registering https to trust all certificates");
+                logger.info("started registering https to trust all certificates");
                 ProtocolSocketFactory myHTTPSProtocol = new EasySSLProtocolSocketFactory();
                 Protocol.registerProtocol(HTTPS_SCHEMA,
                         new Protocol(HTTPS_SCHEMA, myHTTPSProtocol, HTTPS_PORT));
-                LOG.info("finished registering https to trust all certificates");
+                logger.info("finished registering https to trust all certificates");
                 registeredHTTPStrustAll = true;
             } catch (GeneralSecurityException e) {
-                LOG.log(java.util.logging.Level.SEVERE, "Failed to register https protocol .", e);
+                logger.log(java.util.logging.Level.SEVERE, "Failed to register https protocol .", e);
             } catch (IOException e) {
-                LOG.log(java.util.logging.Level.SEVERE, "Failed to register https protocol .", e);
+                logger.log(java.util.logging.Level.SEVERE, "Failed to register https protocol .", e);
             }
 
         }
@@ -318,7 +313,7 @@ public class AuthUtils {
 
         if (!registeredHTTPStrustKeyStore) {
             try {
-                LOG.info("started registering https protocol ");
+                logger.info("started registering https protocol ");
                 URL urlToTruststore =
                         pathToTruststore == null || pathToTruststore.isEmpty() ? null : new URL(pathToTruststore);
                 URL urlToKeyStore = pathToKeyStore == null || pathToKeyStore.isEmpty() ? null : new URL(pathToKeyStore);
@@ -329,14 +324,14 @@ public class AuthUtils {
                 Protocol myHTTPSProtocol = new Protocol(HTTPS_SCHEMA, socketFactory, port == null ? HTTPS_PORT : port);
                 Protocol.registerProtocol(HTTPS_SCHEMA, myHTTPSProtocol);
                 registeredHTTPStrustKeyStore = true;
-                LOG.info("finished registering https protocol ");
+                logger.info("finished registering https protocol ");
                 //httpClient.getHostConfiguration().setHost(url.getHost(), HTTPS_PORT, myhttps);
             } catch (GeneralSecurityException e) {
-                LOG.log(java.util.logging.Level.SEVERE, "Failed to register https protocol .", e);
+                logger.log(java.util.logging.Level.SEVERE, "Failed to register https protocol .", e);
             } catch (IOException e) {
-                LOG.log(java.util.logging.Level.SEVERE, "Failed to register https protocol .", e);
+                logger.log(java.util.logging.Level.SEVERE, "Failed to register https protocol .", e);
             } catch (Exception e) {
-                LOG.log(java.util.logging.Level.SEVERE, "Failed to register https protocol .", e);
+                logger.log(java.util.logging.Level.SEVERE, "Failed to register https protocol .", e);
             }
 
         }

@@ -4,7 +4,9 @@ import java.io.File;
 
 public class AuthConsts {
 
-    public static final String BROWSER_USER_AGENT_VALUE = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.131 Safari/537.36";
+    public static final String BROWSER_USER_AGENT_VALUE = "Mozilla/5.0 (Macintosh; " +
+            "Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, " +
+            "like Gecko) Chrome/34.0.1847.131 Safari/537.36";
     public static final String HTTP_DEFAULT_HEADERS = "http.default-headers";
     public static final String USER_AGENT = "User-Agent";
     public static final String NEGOTIATE = "Negotiate";
