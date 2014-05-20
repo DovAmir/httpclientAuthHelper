@@ -1,6 +1,6 @@
 
 
-package com.jivesoftware.extendedAuth.customescheme.ntlm2;
+package com.jivesoftware.authHelper.customescheme.ntlm2;
 
 
 import java.nio.charset.Charset;

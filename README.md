@@ -1,4 +1,4 @@
-# Httpclient Authentication helper
+# Httpclient Authentication Helper
 
 ## What is it?
 A library that helps authenticate Httpclient 3  with services that use  NTLM, KERBEROS, SSL authentications.
@@ -47,6 +47,11 @@ Example:
         String responseString=AuthUtils.getResponseAsStringAndHandleGzip(httpget);
 
 ```
+
+## TODO's
+support httpclient 4 (for all featurs except NTLM support that is already built in httpclient4)
+support OAUTH
+support cryptography helpers to create keys and encrypt\decrypt
 
 ## Developer
 Dov Amir

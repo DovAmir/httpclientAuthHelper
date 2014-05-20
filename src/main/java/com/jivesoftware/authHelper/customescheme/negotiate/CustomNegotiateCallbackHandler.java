@@ -6,7 +6,7 @@
  */
 
 //package com.sun.security.auth.callback;
-package com.jivesoftware.extendedAuth.customescheme.negotiate;
+package com.jivesoftware.authHelper.customescheme.negotiate;
 
 /* JAAS imports */
 import java.io.*;

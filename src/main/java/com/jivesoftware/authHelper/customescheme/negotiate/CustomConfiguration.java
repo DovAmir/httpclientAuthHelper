@@ -6,7 +6,7 @@
  *
  * This software is the proprietary information of Jive Software. Use is subject to license terms.
  */
-package com.jivesoftware.extendedAuth.customescheme.negotiate;
+package com.jivesoftware.authHelper.customescheme.negotiate;
 
 import java.util.Collections;
 import java.util.Map;

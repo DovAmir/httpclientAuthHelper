@@ -1,4 +1,4 @@
-package com.jivesoftware.extendedAuth.utils;
+package com.jivesoftware.authHelper.utils;
 
 import junit.framework.TestCase;
 import org.apache.commons.httpclient.HttpClient;

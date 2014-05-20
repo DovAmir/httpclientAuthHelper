@@ -1,4 +1,4 @@
-package com.jivesoftware.extendedAuth.utils;
+package com.jivesoftware.authHelper.utils;
 
 /**
  * Created with IntelliJ IDEA.

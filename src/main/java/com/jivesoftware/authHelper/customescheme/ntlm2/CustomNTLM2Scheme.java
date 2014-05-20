@@ -1,5 +1,5 @@
 
-package com.jivesoftware.extendedAuth.customescheme.ntlm2;
+package com.jivesoftware.authHelper.customescheme.ntlm2;
 
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HttpMethod;

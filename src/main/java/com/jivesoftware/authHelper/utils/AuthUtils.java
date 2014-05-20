@@ -1,4 +1,4 @@
-package com.jivesoftware.extendedAuth.utils;
+package com.jivesoftware.authHelper.utils;
 
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.auth.AuthPolicy;
@@ -22,7 +22,7 @@ import java.util.Scanner;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 
-import static com.jivesoftware.extendedAuth.utils.AuthConsts.*;
+import static com.jivesoftware.authHelper.utils.AuthConsts.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -232,7 +232,7 @@ public class AuthUtils {
             try {
                 logger.info(" adding NTLMv2 based   authentication schema for HttpClient");
                 AuthPolicy.registerAuthScheme(AuthPolicy.NTLM,
-                        com.jivesoftware.extendedAuth.customescheme.ntlm2.CustomNTLM2Scheme.class);
+                        com.jivesoftware.authHelper.customescheme.ntlm2.CustomNTLM2Scheme.class);
                 registeredNTLM = true;
             } catch (Throwable e) {
                 logger.log(java.util.logging.Level.SEVERE,
@@ -249,7 +249,7 @@ public class AuthUtils {
                 System.setProperty(USE_SUBJECT_CREDS, "false");
 
                 AuthPolicy.registerAuthScheme(NEGOTIATE,
-                        com.jivesoftware.extendedAuth.customescheme.negotiate.CustomNegotiateScheme.class);
+                        com.jivesoftware.authHelper.customescheme.negotiate.CustomNegotiateScheme.class);
                 registeredKERBEROS = true;
             } catch (Throwable e) {
                 logger.log(java.util.logging.Level.SEVERE, "Could not add KERBEROS  for HttpClient.", e);

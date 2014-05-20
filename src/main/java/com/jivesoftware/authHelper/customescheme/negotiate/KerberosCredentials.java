@@ -1,4 +1,4 @@
-package com.jivesoftware.extendedAuth.customescheme.negotiate;
+package com.jivesoftware.authHelper.customescheme.negotiate;
 
 import org.apache.commons.httpclient.NTCredentials;
 

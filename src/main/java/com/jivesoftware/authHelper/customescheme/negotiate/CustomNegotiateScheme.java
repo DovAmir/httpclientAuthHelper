@@ -28,7 +28,7 @@
  *
  */
 
-package com.jivesoftware.extendedAuth.customescheme.negotiate;
+package com.jivesoftware.authHelper.customescheme.negotiate;
 
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;

@@ -5,7 +5,7 @@
  * Time: 3:22 PM
  * To change this template use File | Settings | File Templates.
  */
-package com.jivesoftware.extendedAuth.customescheme.ntlm2;
+package com.jivesoftware.authHelper.customescheme.ntlm2;
 
 import java.security.Key;
 import java.security.MessageDigest;
