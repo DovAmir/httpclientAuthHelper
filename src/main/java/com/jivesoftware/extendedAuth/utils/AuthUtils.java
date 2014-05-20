@@ -8,12 +8,14 @@ import org.apache.commons.httpclient.contrib.ssl.EasySSLProtocolSocketFactory;
 import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Inet4Address;
 import java.net.URL;
 import java.security.GeneralSecurityException;
+import java.security.Security;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Scanner;
@@ -41,6 +43,42 @@ public class AuthUtils {
     //System.setProperty("jsse.enableSNIExtension", "false");
 
 
+
+
+
+
+
+    public static void addEncryptionProviders() {
+        try {
+             java.security.Provider secProvider1 = (java.security.Provider) Class
+                     .forName("com.sun.crypto.provider.SunJCE").newInstance();
+             Security.addProvider(secProvider1);
+         } catch (Exception e) {
+         }
+        try {
+            java.security.Provider secProvider2 = (java.security.Provider) Class
+                    .forName("com.ncipher.provider.km.nCipherKM").newInstance();
+            Security.addProvider(secProvider2);
+        } catch (Exception e) {
+       }
+        try {
+            java.security.Provider secProvider3 = (java.security.Provider) Class
+                    .forName("com.ibm.crypto.provider.IBMJCE").newInstance();
+            Security.addProvider(secProvider3);
+        } catch (Exception e) {
+        }
+        try {
+            java.security.Provider secProvider4= (java.security.Provider) Class
+                    .forName("sun.security.rsa.SunRsaSign").newInstance();
+           Security.addProvider(secProvider4);
+        } catch (Exception e) {
+        }
+        try {
+            Security.addProvider(new BouncyCastleProvider());
+        } catch (Exception e) {
+        }
+    }
+
     public static void securityLogging(SecurityLogType logType, boolean enable) {
         String value = String.valueOf(enable);
         if (enable && logType.equals(SecurityLogType.ALL) || logType.equals(SecurityLogType.SSL)) {
@@ -63,7 +101,7 @@ public class AuthUtils {
     }
 
 
-    public static String getStreamResponseAsStringAndHandleGzip(HttpMethodBase httpget) throws IOException {
+    public static String getResponseAsStringAndHandleGzip(HttpMethodBase httpget) throws IOException {
         Header contentEncodingHeader = httpget.getResponseHeader(CONTENT_ENCODING_HEADER);
         InputStream stream = httpget.getResponseBodyAsStream();
         if (contentEncodingHeader != null && contentEncodingHeader.getValue().equalsIgnoreCase(GZIP)) {
@@ -81,14 +119,14 @@ public class AuthUtils {
     }
 
 
-    public static void setProxyCredentials(HttpClient httpClient, UsernamePasswordCredentials proxyCredentials,
-                                           String proxyHost, String proxyPort) {
+    public static void proxyHost(HttpClient httpClient, UsernamePasswordCredentials proxyCredentials,
+                                 String proxyHost, int proxyPort) {
 
-        if (proxyHost != null && !proxyHost.isEmpty() && proxyPort != null && !proxyPort.isEmpty()) {
-            httpClient.getHostConfiguration().setProxy(proxyHost, Integer.parseInt(proxyPort));
+        if (proxyHost != null && !proxyHost.isEmpty()) {
+            httpClient.getHostConfiguration().setProxy(proxyHost, proxyPort);
             if (proxyCredentials != null) {
                 HttpState state = new HttpState();
-                state.setProxyCredentials(AuthScope.ANY, proxyCredentials);
+                state.setProxyCredentials(new AuthScope(proxyHost, proxyPort), proxyCredentials);
                 httpClient.setState(state);
             }
         }
@@ -172,7 +210,7 @@ public class AuthUtils {
         }
     }
 
-    public static void impersonateBrowserUserAgent(HttpClient httpClient) {
+    public static void useBrowserUserAgent(HttpClient httpClient) {
         LOG.info(" adding user agent of a browser");
         addDefaultHeader(httpClient, false, USER_AGENT,
                 AuthConsts.BROWSER_USER_AGENT_VALUE);

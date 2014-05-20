@@ -1,38 +1,56 @@
-# android-ntlm
+# Httpclient Authentication helper
+
 ## What is it?
-Android NTLM Authentication
+A library that helps authenticate Httpclient 3  with services that use  NTLM, KERBEROS, SSL authentications.
+
+The design goals are to be unobstrusive and simple to use.
+The library uses default configurations that apply to 99% of the use cases, so that the developer wont
+have to concern himself with the details of his chosen authentication mechansim.
+
+The main features are:
+
+* support NTLM v1 and NTLMv2
+* support KERBEROS without the need for external files (login.conf,krb.ini )
+* support SSL in 3 modes- trust all certificates, trust JDK truststore (cacerts), trust custom truststore
+* vairious tools - logging for security, cryptography providers, use browser user agent, handle gzipped response, etc...
 
 ## How to use?
-* Use as submodule
-```
-git submodule add git@github.com:masconsult/android-ntlm.git
-```
-* Add android-ntlm as library into your project (Properties/Android/Library/Add)
-* Register AuthSheme and specify NTCredentials
 
 Example:
 ```
+    /*
+        example 1: connect to a service on a windows iis server that is protected by NTLMv2
+        and has a self signed certificate
+    */
     DefaultHttpClient httpclient = new DefaultHttpClient();
-    // register ntlm auth scheme
-    httpclient.getAuthSchemes().register("ntlm", new NTLMSchemeFactory());
-    httpclient.getCredentialsProvider().setCredentials(
-    		// Limit the credentials only to the specified domain and port
-            new AuthScope("masconsult.eu", -1),
-            // Specify credentials, most of the time only user/pass is needed
-            new NTCredentials(username, password, "", "")
-            );
+
+    AuthUtils.trustAllSSLCertificates();
+    AuthUtils.setNTLMCredentials(client, new UsernamePasswordCredentials("xxx", "xxx"), "mydomain");
+
+    client.executeMethod(httpget);
+
+    /*
+        example 2: connect to a service  that is protected by KERBEROS
+        and has a  certificate  whose CA is in my JDK trust store.
+        The service returns a gziped json response and accepts only for browser user agents.
+        also this will log the kerberos handshake
+    */
+        DefaultHttpClient httpclient = new DefaultHttpClient();
+
+        AuthUtils.securityLogging(SecurityLogType.KERBEROS,true)
+
+        AuthUtils.trustJDKDefaultSSLCertificates();
+        AuthUtils.useBrowserUserAgent();
+        AuthUtils.setKerberosCredentials(client, new UsernamePasswordCredentials("xxx", "xxx"), "domain", "kdc");
+
+        client.executeMethod(httpget);
+        String responseString=AuthUtils.getResponseAsStringAndHandleGzip(httpget);
+
 ```
 
-## How to configure Proguard?
-Just add these lines
-```
--dontwarn javax.servlet.**
--dontwarn jcifs.http.NetworkExplorer
-```
-
-## Credits
-* Based on article http://www.tekritisoftware.com/android-ntlm-authentication
-* Uses jcifs from SAMBA project
+## Developer
+Dov Amir
+dov.amir@jivesoftware.com
 
 ## License
 

@@ -83,6 +83,24 @@ public class CustomNegotiateScheme implements AuthScheme {
 
     private int retryCount = 0;
 
+
+        /*
+    this function represents the config file described in
+    http://hc.apache.org/httpcomponents-client-ga/tutorial/html/authentication.html#d5e790
+    and can be modified if needed
+     */
+     private CustomConfiguration getCustomConfiguration(UsernamePasswordCredentials credentials) {
+        AppConfigurationEntry[] defaultConfiguration = new AppConfigurationEntry[1];
+        Map options = new HashMap();
+        options.put("principal", credentials.getUserName());
+        options.put("client", "true");
+        options.put("debug", "false");
+        defaultConfiguration[0] = new AppConfigurationEntry("com.sun.security.auth.module.Krb5LoginModule",
+                AppConfigurationEntry.LoginModuleControlFlag.REQUIRED, options);
+        return new CustomConfiguration(defaultConfiguration);
+    }
+
+
     /**
      * Init GSSContext for negotiation.
      *
@@ -99,19 +117,12 @@ public class CustomNegotiateScheme implements AuthScheme {
         LoginContext con = null;
 
         try {
-            AppConfigurationEntry[] defaultConfiguration = new AppConfigurationEntry[1];
-            Map options = new HashMap();
-            options.put("principal", credentials.getUserName());
-            options.put("client", "true");
-            options.put("debug", "false");
-            defaultConfiguration[0] = new AppConfigurationEntry("com.sun.security.auth.module.Krb5LoginModule",
-                    AppConfigurationEntry.LoginModuleControlFlag.REQUIRED, options);
-            CustomConfiguration cc = new CustomConfiguration(defaultConfiguration);
-            Configuration.setConfiguration(cc);
+            CustomConfiguration cc = getCustomConfiguration(credentials);
 
             // Create a LoginContext with a callback handler
             con = new LoginContext("com.sun.security.jgss.login", null, callbackHandler, cc);
 
+            Configuration.setConfiguration(cc);
             // Perform authentication
             con.login();
         } catch (LoginException e) {

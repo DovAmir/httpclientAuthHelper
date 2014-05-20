@@ -16,13 +16,23 @@ import org.junit.runners.MethodSorters;
 
 import javax.net.ssl.SSLException;
 import java.io.IOException;
+import java.security.Provider;
+import java.security.Security;
+import java.util.Comparator;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Created with IntelliJ IDEA.
  * User: dovamir
  * Date: 4/29/14
  * Time: 7:21 PM
- * To change this template use File | Settings | File Templates.
+ *
+ *
+ * to make these tests relevant , they test real URLs on the web. Of course the drawback
+ * is that if these urls change the tests will fail.
+ * the tests to NTLM, kerberos and proxy have been tested internally but are not fully implemented here
+ * because I could not find stable and publically available endpoints to test.
  */
 @RunWith(JUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -103,14 +113,14 @@ public class AuthUtilsTest extends TestCase {
         String url = "https://testssl.disig.sk"; //expired certificate
         AuthUtils.trustAllSSLCertificates();
 
-        AuthUtils.impersonateBrowserUserAgent(client);
+        AuthUtils.useBrowserUserAgent(client);
         int respose1 = executeRequestReturnStatus(url);
         assertEquals("Should return a 200 response", 200, respose1);
 
     }
 
     @Test()
-    public void testSSLWithOutBrowserUserAgent() throws IOException {
+    public void testSSLWithoutBrowserUserAgent() throws IOException {
 
         String url = "https://testssl.disig.sk"; //expired certificate
         AuthUtils.trustAllSSLCertificates();
@@ -125,7 +135,7 @@ public class AuthUtilsTest extends TestCase {
         String url = "https://example.com/"; //invalid certificate
         AuthUtils.trustJDKDefaultSSLCertificates();
         int respose1 = executeRequestReturnStatus(url);
-        fail();
+        fail("should not get here");
     }
 
 
@@ -134,8 +144,34 @@ public class AuthUtilsTest extends TestCase {
         String url = "https://testssl-expire.disig.sk/"; //expired certificate
         AuthUtils.trustJDKDefaultSSLCertificates();
         String respose1 = executeRequestReturnResponseAsString(url);
-        fail();
+        fail("should not get here");
     }
+
+
+    /*
+    test cryptography providers
+     */
+    @Test
+    public void testProviders() throws Exception {
+        AuthUtils.addEncryptionProviders();
+        Provider[] providers = Security.getProviders();
+        int numservices = 0;
+        System.out.println("========Providers only=======");
+        for (Provider p : providers) {
+            String info = p.getInfo();
+            System.out.println(p.getClass() + " - " + info);
+        }
+        System.out.println("========Providers + services=======");
+        for (Provider p : providers) {
+            String info = p.getInfo();
+            //System.out.println(p.getClass() + " - " + info);
+            numservices += printServices(p);
+        }
+        System.out.println("total number of providers : " + providers.length);
+        System.out.println("total number of services : " + numservices);
+    }
+
+
 
 
     /*
@@ -144,7 +180,8 @@ public class AuthUtilsTest extends TestCase {
 
     @Ignore("Not yet implemented")
     public void testSSLTrustCustomStore() throws IOException {
-        String url = "http://api.stackexchange.com/2.2/questions?site=stackoverflow";
+        String url = "";
+        //AuthUtils.trustCustomHTTPSCertificates();
         int respose = executeRequestReturnStatus(url);
         assertEquals("Should return a 200 response", 200, respose);
     }
@@ -152,10 +189,11 @@ public class AuthUtilsTest extends TestCase {
 
     @Ignore("Not yet implemented")
     public void testKERBEROS() throws IOException {
-        String url = "https://il-qa-sp1301.qa-spc.eng.jiveland.com:443/sites/DovCollection";
+        String url = "yourKERBEROSserver";
+        AuthUtils.trustAllSSLCertificates();
         AuthUtils
-                .setKerberosCredentials(client, new UsernamePasswordCredentials("hod.kashtan", "Welcome123!"), "qa-spc",
-                        "qa-spc");
+                .setKerberosCredentials(client, new UsernamePasswordCredentials("xxx", "xxx"), "domain",
+                        "kdc");
         int respose = executeRequestReturnStatus(url);
         assertEquals("Should return a 200 response", 200, respose);
     }
@@ -163,16 +201,18 @@ public class AuthUtilsTest extends TestCase {
 
     @Ignore("Not yet implemented")
     public void testNTLM() throws IOException {
-        String url = "https://il-qa-sp1301.qa-spc.eng.jiveland.com:8866/sites/DovCollection";
-        AuthUtils.setNTLMCredentials(client, new UsernamePasswordCredentials("hod.kashtan", "Welcome123!"), "qa-spc");
+        String url = "yourNTLMserver";
+        AuthUtils.trustAllSSLCertificates();
+        AuthUtils.setNTLMCredentials(client, new UsernamePasswordCredentials("xxx", "xxx"), "domain");
         int respose = executeRequestReturnStatus(url);
         assertEquals("Should return a 200 response", 200, respose);
     }
 
     @Ignore("Not yet implemented")
     public void testUseNTLMforMixedAuth() throws IOException {
-        String url = "https://il-qa-sp1301.qa-spc.eng.jiveland.com:8866/sites/DovCollection";
-        AuthUtils.setNTLMCredentials(client, new UsernamePasswordCredentials("hod.kashtan", "Welcome123!"), "qa-spc");
+        String url = "yourCLAIMSandNTLMserver";
+        AuthUtils.trustAllSSLCertificates();
+        AuthUtils.setNTLMCredentials(client, new UsernamePasswordCredentials("xxx", "xxx"), "domain");
         int respose = executeRequestReturnStatus(url);
         assertEquals("Should return a 200 response", 200, respose);
     }
@@ -180,6 +220,8 @@ public class AuthUtilsTest extends TestCase {
     @Ignore("Not yet implemented")
     public void testProxy() throws IOException {
         String url = "http://api.stackexchange.com/2.2/questions?site=stackoverflow";
+        AuthUtils.proxyHost(client, null, "88.88.88.88", 8080);
+        AuthUtils.useBrowserUserAgent(client);
         int respose = executeRequestReturnStatus(url);
         assertEquals("Should return a 200 response", 200, respose);
     }
@@ -192,7 +234,7 @@ public class AuthUtilsTest extends TestCase {
     private String executeRequestReturnResponseAsString(String url) throws IOException {
         GetMethod httpget = new GetMethod(url);
         client.executeMethod(httpget);
-        return AuthUtils.getStreamResponseAsStringAndHandleGzip(httpget);
+        return AuthUtils.getResponseAsStringAndHandleGzip(httpget);
     }
 
     private int executeRequestReturnStatus(String url) throws IOException {
@@ -207,6 +249,40 @@ public class AuthUtilsTest extends TestCase {
             return true;
         } catch (JSONException ex) {
             return false;
+        }
+    }
+
+    private int printServices(Provider p) {
+
+        SortedSet<Provider.Service> services = new TreeSet(new ProviderServiceComparator());
+
+        services.addAll(p.getServices());
+        for (Provider.Service service : services) {
+
+            String algo = service.getAlgorithm();
+
+            //System.out.println("==> Service: " + service.getType() + " - " + algo);
+
+        }
+        return services.size();
+
+    }
+
+    /**
+     * This is to sort the various Services to make it easier on the eyes...
+     */
+
+    private class ProviderServiceComparator implements Comparator<Provider.Service> {
+        @Override
+        public int compare(Provider.Service object1, Provider.Service object2) {
+
+            String s1 = object1.getType() + object1.getAlgorithm();
+
+            String s2 = object2.getType() + object2.getAlgorithm();
+
+
+            return s1.compareTo(s2);
+
         }
     }
 }
