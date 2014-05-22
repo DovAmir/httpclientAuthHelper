@@ -1,4 +1,4 @@
-package com.jivesoftware.authHelper.utils;
+package com.jivesoftware.authHelper.consts;
 
 /**
  * Created with IntelliJ IDEA.

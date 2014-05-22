@@ -65,7 +65,7 @@ public class AuthUtilsTest extends TestCase {
         String url = "http://browserspy.dk/password-ok.php";
         int respose1 = executeRequestReturnStatus(url);
         assertEquals("Should return a 401 response", 401, respose1);
-        AuthUtils.setBasicAuthCredentials(client, new UsernamePasswordCredentials("test", "test"));
+        CredentialsUtils.setBasicAuthCredentials(client, new UsernamePasswordCredentials("test", "test"));
         int respose2 = executeRequestReturnStatus(url);
         assertEquals("Should return a 200 response", 200, respose2);
     }
@@ -84,7 +84,7 @@ public class AuthUtilsTest extends TestCase {
     public void testJDKDefaultSSLtoValidCert() throws IOException {
 
         String url = "https://www.google.com/"; //valid certificate
-        AuthUtils.trustAllSSLCertificates();
+        SSLUtils.trustAllSSLCertificates();
         int respose2 = executeRequestReturnStatus(url);
         assertEquals("Should return a 200 response", 200, respose2);
     }
@@ -93,7 +93,7 @@ public class AuthUtilsTest extends TestCase {
     public void testSSLTrustAlltoValidCert() throws IOException {
 
         String url = "https://google.com/"; //invalid certificate
-        AuthUtils.trustAllSSLCertificates();
+        SSLUtils.trustAllSSLCertificates();
         int respose1 = executeRequestReturnStatus(url);
         assertEquals("Should return a 200 response", 200, respose1);
 
@@ -102,7 +102,7 @@ public class AuthUtilsTest extends TestCase {
     @Test()
     public void testSSLTrustAlltoInvalidNameCert() throws IOException {
         String url = "https://example.com/"; //invalid certificate
-        AuthUtils.trustAllSSLCertificates();
+        SSLUtils.trustAllSSLCertificates();
         int respose1 = executeRequestReturnStatus(url);
         assertEquals("Should return a 200 response", 200, respose1);
     }
@@ -111,7 +111,7 @@ public class AuthUtilsTest extends TestCase {
     @Test()
     public void testSSLWithBrowserUserAgent() throws IOException {
         String url = "https://testssl.disig.sk"; //expired certificate
-        AuthUtils.trustAllSSLCertificates();
+        SSLUtils.trustAllSSLCertificates();
 
         AuthUtils.useBrowserUserAgent(client);
         int respose1 = executeRequestReturnStatus(url);
@@ -123,7 +123,7 @@ public class AuthUtilsTest extends TestCase {
     public void testSSLWithoutBrowserUserAgent() throws IOException {
 
         String url = "https://testssl.disig.sk"; //expired certificate
-        AuthUtils.trustAllSSLCertificates();
+        SSLUtils.trustAllSSLCertificates();
         int respose1 = executeRequestReturnStatus(url);
         assertEquals("Should return a 403 response when no browser user agent provided", 403, respose1);
 
@@ -133,7 +133,7 @@ public class AuthUtilsTest extends TestCase {
     @Test(expected = SSLException.class)
     public void testJDKDefaultSSLtoInvalidNameCert() throws IOException, SSLException {
         String url = "https://example.com/"; //invalid certificate
-        AuthUtils.trustJDKDefaultSSLCertificates();
+        SSLUtils.trustJDKDefaultSSLCertificates();
         int respose1 = executeRequestReturnStatus(url);
         fail("should not get here");
     }
@@ -142,7 +142,7 @@ public class AuthUtilsTest extends TestCase {
     @Test(expected = SSLException.class)
     public void testJDKDefaultSSLtoExpiredCert() throws IOException, SSLException {
         String url = "https://testssl-expire.disig.sk/"; //expired certificate
-        AuthUtils.trustJDKDefaultSSLCertificates();
+        SSLUtils.trustJDKDefaultSSLCertificates();
         String respose1 = executeRequestReturnResponseAsString(url);
         fail("should not get here");
     }
@@ -150,9 +150,33 @@ public class AuthUtilsTest extends TestCase {
 
     /*
     test cryptography providers
+    */
+    @Test
+    public void testDefaultEncryptionProviders() throws Exception {
+        System.out.println("========testDefaultEncryptionProviders=======");
+        Provider[] providers = Security.getProviders();
+        int numservices = 0;
+        System.out.println("========default Providers only=======");
+        for (Provider p : providers) {
+            String info = p.getInfo();
+            System.out.println(p.getClass() + " - " + info);
+        }
+        System.out.println("========default Providers + services=======");
+        for (Provider p : providers) {
+            String info = p.getInfo();
+            //System.out.println(p.getClass() + " - " + info);
+            numservices += printServices(p);
+        }
+        System.out.println("total number of default providers : " + providers.length);
+        System.out.println("total number of default services : " + numservices);
+    }
+
+    /*
+    test cryptography providers
      */
     @Test
-    public void testProviders() throws Exception {
+    public void testAddEncryptionProviders() throws Exception {
+        System.out.println("========testAddEncryptionProviders=======");
         AuthUtils.addEncryptionProviders();
         Provider[] providers = Security.getProviders();
         int numservices = 0;
@@ -181,7 +205,7 @@ public class AuthUtilsTest extends TestCase {
     @Ignore("Not yet implemented")
     public void testSSLTrustCustomStore() throws IOException {
         String url = "";
-        //AuthUtils.trustCustomHTTPSCertificates();
+        //SSLUtils.trustCustomHTTPSCertificates();
         int respose = executeRequestReturnStatus(url);
         assertEquals("Should return a 200 response", 200, respose);
     }
@@ -190,8 +214,8 @@ public class AuthUtilsTest extends TestCase {
     @Ignore("Not yet implemented")
     public void testKERBEROS() throws IOException {
         String url = "yourKERBEROSserver";
-        AuthUtils.trustAllSSLCertificates();
-        AuthUtils
+        SSLUtils.trustAllSSLCertificates();
+        CredentialsUtils
                 .setKerberosCredentials(client, new UsernamePasswordCredentials("xxx", "xxx"), "domain",
                         "kdc");
         int respose = executeRequestReturnStatus(url);
@@ -202,8 +226,8 @@ public class AuthUtilsTest extends TestCase {
     @Ignore("Not yet implemented")
     public void testNTLM() throws IOException {
         String url = "yourNTLMserver";
-        AuthUtils.trustAllSSLCertificates();
-        AuthUtils.setNTLMCredentials(client, new UsernamePasswordCredentials("xxx", "xxx"), "domain");
+        SSLUtils.trustAllSSLCertificates();
+        CredentialsUtils.setNTLMCredentials(client, new UsernamePasswordCredentials("xxx", "xxx"), "domain");
         int respose = executeRequestReturnStatus(url);
         assertEquals("Should return a 200 response", 200, respose);
     }
@@ -211,8 +235,8 @@ public class AuthUtilsTest extends TestCase {
     @Ignore("Not yet implemented")
     public void testUseNTLMforMixedAuth() throws IOException {
         String url = "yourCLAIMSandNTLMserver";
-        AuthUtils.trustAllSSLCertificates();
-        AuthUtils.setNTLMCredentials(client, new UsernamePasswordCredentials("xxx", "xxx"), "domain");
+        SSLUtils.trustAllSSLCertificates();
+        CredentialsUtils.setNTLMCredentials(client, new UsernamePasswordCredentials("xxx", "xxx"), "domain");
         int respose = executeRequestReturnStatus(url);
         assertEquals("Should return a 200 response", 200, respose);
     }
@@ -220,7 +244,7 @@ public class AuthUtilsTest extends TestCase {
     @Ignore("Not yet implemented")
     public void testProxy() throws IOException {
         String url = "http://api.stackexchange.com/2.2/questions?site=stackoverflow";
-        AuthUtils.proxyHost(client, null, "88.88.88.88", 8080);
+        CredentialsUtils.setProxyHost(client, null, "88.88.88.88", 8080);
         AuthUtils.useBrowserUserAgent(client);
         int respose = executeRequestReturnStatus(url);
         assertEquals("Should return a 200 response", 200, respose);

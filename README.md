@@ -1,36 +1,54 @@
 # Httpclient Authentication Helper
 
 ## What is it?
-A library that helps authenticate Httpclient 3  with services that use  NTLM, KERBEROS, SSL authentications.
+A library that helps authenticate Httpclient 3  with services that use  NTLM, KERBEROS and SSL authentication.
 
-The design goals are to be unobstrusive and simple to use.
+The design goal is to be as simple as possible to use.
 The library uses default configurations that apply to 99% of the use cases, so that the developer wont
-have to concern himself with the details of his chosen authentication mechansim.
+have to concern himself with the details of his chosen authentication mechanism.
 
 The main features are:
 
-* support NTLM v1 and NTLMv2
-* support KERBEROS without the need for external files (login.conf,krb.ini )
-* support SSL in 3 modes- trust all certificates, trust JDK truststore (cacerts), trust custom truststore
-* vairious tools - logging for security, cryptography providers, use browser user agent, handle gzipped response, etc...
+CredentialsUtils:
+
+* support basic  authenticaion
+* route request through a proxy
+* support NTLM v1 and NTLMv2  (httpclient3.x does not support NTLMv2 and support NTLMv1 only with the JCFIS package )
+* support KERBEROS without the need for any external configuration files (login.conf , krb.ini )
+
+SSLUtils:
+
+support SSL in 3 modes-
+* trust all certificates,
+* trust JDK truststore (cacerts),
+* trust custom truststore
+
+AuthUtils:
+
+vairious tools
+* logging for security
+* cryptography providers
+* use browser user agent
+* handle gzipped response
+ and more ...
 
 ## How to use?
 
 Example:
 ```
     /*
-        example 1: connect to a service on a windows iis server that is protected by NTLMv2
+        Example a: connect to a service on a windows iis server that is protected by NTLMv2
         and has a self signed certificate
     */
-    DefaultHttpClient httpclient = new DefaultHttpClient();
+        DefaultHttpClient httpclient = new DefaultHttpClient();
 
-    AuthUtils.trustAllSSLCertificates();
-    AuthUtils.setNTLMCredentials(client, new UsernamePasswordCredentials("xxx", "xxx"), "mydomain");
+        SSLUtils.trustAllSSLCertificates();
+        CredentialsUtils.setNTLMCredentials(client, new UsernamePasswordCredentials("xxx", "xxx"), "mydomain");
 
-    client.executeMethod(httpget);
+        client.executeMethod(httpget);
 
     /*
-        example 2: connect to a service  that is protected by KERBEROS
+        Example a: connect to a service  that is protected by KERBEROS
         and has a  certificate  whose CA is in my JDK trust store.
         The service returns a gziped json response and accepts only for browser user agents.
         also this will log the kerberos handshake
@@ -39,9 +57,9 @@ Example:
 
         AuthUtils.securityLogging(SecurityLogType.KERBEROS,true)
 
-        AuthUtils.trustJDKDefaultSSLCertificates();
+        SSLUtils.trustJDKDefaultSSLCertificates();
         AuthUtils.useBrowserUserAgent();
-        AuthUtils.setKerberosCredentials(client, new UsernamePasswordCredentials("xxx", "xxx"), "domain", "kdc");
+        CredentialsUtils.setKerberosCredentials(client, new UsernamePasswordCredentials("xxx", "xxx"), "domain", "kdc");
 
         client.executeMethod(httpget);
         String responseString=AuthUtils.getResponseAsStringAndHandleGzip(httpget);
@@ -49,9 +67,8 @@ Example:
 ```
 
 ## TODO's
-support httpclient 4 (for all featurs except NTLM support that is already built in httpclient4)
-support OAUTH
-support cryptography helpers to create keys and encrypt\decrypt
+support httpclient 4
+open for suggestions
 
 ## Developer
 Dov Amir
