@@ -35,7 +35,8 @@ vairious tools
 ## How to use?
 
 Example:
-<code>
+```javascript
+
     /*
         Example a: connect to a service on a windows iis server that is protected by NTLMv2
         and has a self signed certificate
@@ -64,7 +65,7 @@ Example:
         client.executeMethod(httpget);
         String responseString=AuthUtils.getResponseAsStringAndHandleGzip(httpget);
 
-</code>
+```
 
 ## TODO's
 support httpclient 4
