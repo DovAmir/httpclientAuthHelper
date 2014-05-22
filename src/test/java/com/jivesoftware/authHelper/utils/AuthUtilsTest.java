@@ -30,7 +30,7 @@ import java.util.TreeSet;
  *
  *
  * to make these tests relevant , they test real URLs on the web. Of course the drawback
- * is that if these urls change the tests will fail.
+ * is that if these urls change the tests will fail .
  * the tests to NTLM, kerberos and proxy have been tested internally but are not fully implemented here
  * because I could not find stable and publically available endpoints to test.
  */
