@@ -13,7 +13,7 @@ CredentialsUtils:
 
 * support basic  authenticaion
 * route request through a proxy
-* support NTLM v1 and NTLMv2  (httpclient3.x does not support NTLMv2 and support NTLMv1 only with the JCFIS package )
+* support NTLM v1 and NTLMv2  (httpclient3.x does not support NTLMv2 and supports NTLMv1 only with the JCFIS package )
 * support KERBEROS without the need for any external configuration files (login.conf , krb.ini )
 
 SSLUtils:
@@ -49,7 +49,7 @@ Example:
         client.executeMethod(httpget);
 
     /*
-        Example a: connect to a service  that is protected by KERBEROS
+        Example b: connect to a service  that is protected by KERBEROS
         and has a  certificate  whose CA is in my JDK trust store.
         The service returns a gziped json response and accepts only for browser user agents.
         also this will log the kerberos handshake
@@ -69,10 +69,12 @@ Example:
 
 ## TODO's
 support httpclient 4
+
 open for suggestions
 
 ## Developer
 Dov Amir
+
 dov.amir@jivesoftware.com
 
 ## License
