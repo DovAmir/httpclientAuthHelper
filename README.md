@@ -7,30 +7,34 @@ The design goal is to be as simple as possible to use.
 The library uses default configurations that apply to 99% of the use cases, so that the developer wont
 have to concern himself with the details of his chosen authentication mechanism.
 
-The main features are:
+## Features
+The project has 3 parts:
 
-CredentialsUtils:
+CredentialsUtils
+----------------
 
-* support basic  authenticaion
-* route request through a proxy
 * support NTLM v1 and NTLMv2  (httpclient3.x does not support NTLMv2 and supports NTLMv1 only with the JCFIS package )
 * support KERBEROS without the need for any external configuration files (login.conf , krb.ini )
+* support basic  authenticaion
+* route request through a proxy
 
-SSLUtils:
+SSLUtils
+--------
 
 support SSL in 3 modes-
-* trust all certificates,
+* trust all certificates (only for testing),
 * trust JDK truststore (cacerts),
-* trust custom truststore
+* trust your own custom truststore
 
-AuthUtils:
+AuthUtils
+---------
 
-vairious tools
+various tools
 * logging for security
-* cryptography providers
+* adding cryptography providers
 * use browser user agent
 * handle gzipped response
- and more ...
+and more ...
 
 ## How to use?
 
@@ -42,28 +46,22 @@ Example:
         and has a self signed certificate
     */
         DefaultHttpClient httpclient = new DefaultHttpClient();
-
         SSLUtils.trustAllSSLCertificates();
         CredentialsUtils.setNTLMCredentials(client, new UsernamePasswordCredentials("xxx", "xxx"), "mydomain");
-
         client.executeMethod(httpget);
 
     /*
         Example b: connect to a service  that is protected by KERBEROS
         and has a  certificate  whose CA is in my JDK trust store.
-        The service returns a gziped json response and accepts only for browser user agents.
-        also this will log the kerberos handshake
+        The service accepts only for browser user agents.
+        Also  log the kerberos handshake
     */
         DefaultHttpClient httpclient = new DefaultHttpClient();
-
         AuthUtils.securityLogging(SecurityLogType.KERBEROS,true)
-
         SSLUtils.trustJDKDefaultSSLCertificates();
         AuthUtils.useBrowserUserAgent();
         CredentialsUtils.setKerberosCredentials(client, new UsernamePasswordCredentials("xxx", "xxx"), "domain", "kdc");
-
         client.executeMethod(httpget);
-        String responseString=AuthUtils.getResponseAsStringAndHandleGzip(httpget);
 
 ```
 

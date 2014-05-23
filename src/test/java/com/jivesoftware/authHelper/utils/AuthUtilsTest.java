@@ -175,17 +175,17 @@ public class AuthUtilsTest extends TestCase {
     test cryptography providers
      */
     @Test
-    public void testAddEncryptionProviders() throws Exception {
-        System.out.println("========testAddEncryptionProviders=======");
+    public void testExtendedEncryptionProviders() throws Exception {
+        System.out.println("========testExtendedEncryptionProviders=======");
         AuthUtils.addEncryptionProviders();
         Provider[] providers = Security.getProviders();
         int numservices = 0;
-        System.out.println("========Providers only=======");
+        System.out.println("======== Extended Providers =======");
         for (Provider p : providers) {
             String info = p.getInfo();
             System.out.println(p.getClass() + " - " + info);
         }
-        System.out.println("========Providers + services=======");
+        System.out.println("========Extended Providers + services=======");
         for (Provider p : providers) {
             String info = p.getInfo();
             //System.out.println(p.getClass() + " - " + info);

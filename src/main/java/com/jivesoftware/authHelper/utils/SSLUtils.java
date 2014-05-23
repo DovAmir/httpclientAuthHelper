@@ -1,11 +1,12 @@
 package com.jivesoftware.authHelper.utils;
 
+
 import org.apache.commons.httpclient.contrib.ssl.AuthSSLProtocolSocketFactory;
 import org.apache.commons.httpclient.contrib.ssl.EasySSLProtocolSocketFactory;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 
-import javax.annotation.Nullable;
+
 import java.io.IOException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
@@ -28,7 +29,7 @@ public class SSLUtils {
 
     /*
       creats SSL Sockets that accepts all certificates including expired and self-signed certificates
-      warning : might be insecure
+      warning : might be insecure , use for testing
      */
     public static void trustAllSSLCertificates() {
 
@@ -73,10 +74,10 @@ public class SSLUtils {
       * @param truststorePassword Password to unlock the truststore.
      */
     public static void trustCustomHTTPSCertificates(final String pathToKeyStore,
-                                                    @Nullable final String keystorePassword,
-                                                    @Nullable final String pathToTruststore,
-                                                    @Nullable final String truststorePassword,
-                                                    @Nullable final Integer port) {
+                                                    final String keystorePassword,
+                                                    final String pathToTruststore,
+                                                    final String truststorePassword,
+                                                    final Integer port) {
 
         if (!registeredHTTPStrustKeyStore) {
             try {
