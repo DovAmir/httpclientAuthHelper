@@ -7,7 +7,6 @@ The design goal is to be as simple as possible to use.
 The library uses default configurations that apply to 99% of the use cases, so that the developer wont
 have to concern himself with the details of his chosen authentication mechanism.
 
-## Features
 The project has 3 parts:
 
 CredentialsUtils
@@ -42,8 +41,7 @@ Example:
 ```javascript
 
     /*
-        Example a: connect to a service on a windows iis server that is protected by NTLMv2
-        and has a self signed certificate
+        Example A: connect to a service that requires NTLMv2 auth and has an expired self signed certificate
     */
         DefaultHttpClient httpclient = new DefaultHttpClient();
         SSLUtils.trustAllSSLCertificates();
@@ -51,10 +49,9 @@ Example:
         client.executeMethod(httpget);
 
     /*
-        Example b: connect to a service  that is protected by KERBEROS
-        and has a  certificate  whose CA is in my JDK trust store.
-        The service accepts only for browser user agents.
-        Also  log the kerberos handshake
+        Example B: Connect to a service  that requires KERBEROS auth
+        , has a certificate that is trusted by the JDK trust store and accepts only browser user agents.
+        Also, log the kerberos handshake
     */
         DefaultHttpClient httpclient = new DefaultHttpClient();
         AuthUtils.securityLogging(SecurityLogType.KERBEROS,true)
