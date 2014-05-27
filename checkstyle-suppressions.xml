@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+        "-//Puppy Crawl//DTD Suppressions 1.0//EN"
+        "http://www.puppycrawl.com/dtds/suppressions_1_0.dtd">
+
+<suppressions>
+    <suppress checks="ModifiedControlVariable" files="MessageFormatter\.java"/>
+    <suppress checks="MethodLengthCheck|ModifiedControlVariable" files="SortScoresWithDocIds\.java"/>
+    <suppress checks="ParameterNumberCheck" files="UserService\.java"/>
+    <suppress checks=".*" files="target/generated-sources/|com/twitter/zipkin/gen"/>
+    <suppress checks="FileLength" files="test/java/"/>
+</suppressions>

@@ -141,11 +141,11 @@ public class AuthUtils {
             headerSet = new HashSet<Header>();
             clientParams.setParameter(HTTP_DEFAULT_HEADERS, headerSet);
         }
-        if (!headerSet.contains(headerName) && !removeHeader) {
-            Header header1 = new Header(headerName, headervalue);
+        Header header1 = new Header(headerName, headervalue);
+        if (!headerSet.contains(header1) && !removeHeader) {
             headerSet.add(header1);
-        } else if (headerSet.contains(headerName) && removeHeader) {
-            headerSet.remove(headerName);
+        } else if (headerSet.contains(header1) && removeHeader) {
+            headerSet.remove(header1);
         }
     }
 
