@@ -8,7 +8,6 @@ import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthPolicy;
 import org.apache.commons.httpclient.auth.AuthScope;
 
-import javax.annotation.Nullable;
 import java.net.Inet4Address;
 import java.util.ArrayList;
 import java.util.logging.Logger;
@@ -67,7 +66,7 @@ public class CredentialsUtils {
     handle KERBEROS authentication with provided creds
     */
     public static void setKerberosCredentials(HttpClient httpClient,
-                                              UsernamePasswordCredentials credentials, String domain,@Nullable String kdc) {
+                                              UsernamePasswordCredentials credentials, String domain, String kdc) {
         try {
             //set the login scheme
             initKERBEROS(httpClient);
@@ -102,7 +101,7 @@ public class CredentialsUtils {
     /*
     make requests go through proxy with or without basic auth creds
      */
-    public static void setProxyHost(HttpClient httpClient, @Nullable UsernamePasswordCredentials proxyCredentials,
+    public static void setProxyHost(HttpClient httpClient, UsernamePasswordCredentials proxyCredentials,
                                     String proxyHost, int proxyPort) {
 
         if (proxyHost != null && !proxyHost.isEmpty()) {
