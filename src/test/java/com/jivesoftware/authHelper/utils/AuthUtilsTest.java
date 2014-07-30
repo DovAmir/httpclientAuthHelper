@@ -1,15 +1,26 @@
 package com.jivesoftware.authHelper.utils;
 
+import com.carrotsearch.junitbenchmarks.BenchmarkOptions;
+import com.carrotsearch.junitbenchmarks.BenchmarkRule;
+import com.carrotsearch.junitbenchmarks.annotation.AxisRange;
+import com.carrotsearch.junitbenchmarks.annotation.BenchmarkHistoryChart;
+import com.carrotsearch.junitbenchmarks.annotation.BenchmarkMethodChart;
+import com.carrotsearch.junitbenchmarks.annotation.LabelType;
+import com.jivesoftware.authHelper.consts.SecurityLogType;
 import junit.framework.TestCase;
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.JUnitCore;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.junit.runners.MethodSorters;
@@ -36,14 +47,31 @@ import java.util.TreeSet;
  */
 @RunWith(JUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@BenchmarkOptions(benchmarkRounds = 1, warmupRounds = 0, concurrency = BenchmarkOptions.CONCURRENCY_AVAILABLE_CORES)
 public class AuthUtilsTest extends TestCase {
     HttpClient client;
 
+    @Rule
+    public org.junit.rules.TestRule benchmarkRun = new BenchmarkRule();
+
+    public static void main(String[] args) throws Exception {
+        JUnitCore.main(
+                "com.jivesoftware.authHelper.utils.AuthUtilsTest");
+    }
 
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        client = new HttpClient();
+        MultiThreadedHttpConnectionManager connManag =  new MultiThreadedHttpConnectionManager();
+
+        HttpConnectionManagerParams managParams = connManag.getParams();
+
+        managParams.setConnectionTimeout(10000); // 1
+        managParams.setSoTimeout(10000); //2
+        client = new HttpClient(connManag);
+        client.getParams().setParameter("http.connection-manager.timeout", new Long(10000)); //3
+
+
     }
 
     @Override
@@ -211,15 +239,18 @@ public class AuthUtilsTest extends TestCase {
     }
 
 
-    @Ignore("Not yet implemented")
+    //uncomment this annotation to use the test
+    //@Test
     public void testKERBEROS() throws IOException {
-        String url = "yourKERBEROSserver";
+        AuthUtils.securityLogging(SecurityLogType.KERBEROS, true);
+        String url = "your url";
         SSLUtils.trustAllSSLCertificates();
         CredentialsUtils
-                .setKerberosCredentials(client, new UsernamePasswordCredentials("xxx", "xxx"), "domain",
-                        "kdc");
-        int respose = executeRequestReturnStatus(url);
-        assertEquals("Should return a 200 response", 200, respose);
+                .setKerberosCredentials(client, new UsernamePasswordCredentials("user", "password"), "domain",
+                        "KDC");
+        String respose = executeRequestReturnResponseAsString(url);
+        System.out.print(respose);
+      //  assertEquals("Should return a 200 response", 200, respose);
     }
 
 
