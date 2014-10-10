@@ -4,13 +4,15 @@
  * Copyright 2003 Sun Microsystems, Inc. All rights reserved.
  * SUN PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
  */
+package com.jivesoftware.authHelper.customescheme.negotiate;
 
 //package com.sun.security.auth.callback;
-package com.jivesoftware.authHelper.customescheme.negotiate;
 
 /* JAAS imports */
 import java.io.*;
 import java.util.Arrays;
+import java.util.logging.Logger;
+
 import javax.security.auth.callback.*;
 
 
@@ -27,6 +29,9 @@ import javax.security.auth.callback.*;
 
 public class CustomNegotiateCallbackHandler implements CallbackHandler {
 
+    private static final Logger LOG = Logger.getLogger(CustomNegotiateCallbackHandler.class.getName());
+
+  
     private String username;
     private String passswordstr;
 
@@ -82,7 +87,7 @@ public class CustomNegotiateCallbackHandler implements CallbackHandler {
                     text += message;
                 }
                 if (text != null) {
-                    System.err.println(text);
+                    LOG.info(text);
                 }
 
             } else if (callbacks[i] instanceof NameCallback) {
@@ -108,13 +113,13 @@ public class CustomNegotiateCallbackHandler implements CallbackHandler {
             } else if (callbacks[i] instanceof PasswordCallback) {
                 PasswordCallback pc = (PasswordCallback) callbacks[i];
 
-                System.err.print(pc.getPrompt());
-                System.err.flush();
+                LOG.info(pc.getPrompt());
+//                System.err.print(pc.getPrompt());
+//                System.err.flush();
 
                 //   pc.setPassword(readPassword(System.in));
 
                 //   passswordstr=System.getProperty("com.jivesoftware.spintegration.communication.krb5.password");
-
 
                 char[] pass = passswordstr.toCharArray();
                 pc.setPassword(pass);
