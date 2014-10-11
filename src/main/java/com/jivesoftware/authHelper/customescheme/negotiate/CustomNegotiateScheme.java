@@ -107,7 +107,7 @@ public class CustomNegotiateScheme implements AuthScheme {
      * @param server servername only (e.g: radar.it.su.se)
      */
     protected void init(String server, UsernamePasswordCredentials credentials) throws GSSException {
-        LOG.severe("init " + server);
+        LOG.info("init " + server);
 
         // Create a callback handler
         Configuration.setConfiguration(null);

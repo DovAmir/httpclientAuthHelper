@@ -79,7 +79,7 @@ public class CredentialsUtils {
             logger.log(java.util.logging.Level.SEVERE, message, e);
         }
         try {
-            System.err.println("attempting to create KERBEROS using apache http client3");
+            logger.fine("attempting to create KERBEROS using apache http client3");
             ArrayList schemes = new ArrayList();
             schemes.add(NEGOTIATE);
             schemes.add(AuthPolicy.BASIC); //to support basic auth proxy on the way
